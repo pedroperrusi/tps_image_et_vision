@@ -4,7 +4,7 @@
 int main( int argc, char** argv )
 {
     cv::Mat img;
-    img = cv::imread( "data/lena.png" );
+    img = cv::imread( "data/lena.jpg" );
     if( !img.data )
     {
         printf("No image data\n");
