@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(TP1)
+project(image)
 set(EXECUTABLE_OUTPUT_PATH "bin")
 
 find_package( OpenCV REQUIRED )

@@ -1,4 +1,4 @@
 #!/bin/sh
 
 bash scripts/compile.sh
-./build/bin/TP1
+./build/bin/image
