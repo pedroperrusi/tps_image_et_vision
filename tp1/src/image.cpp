@@ -4,6 +4,7 @@
 int main( int argc, char** argv )
 {
     cv::Mat img;
+    // exit bin directory and access image on data/
     img = cv::imread( "data/lena.jpg" );
     if( !img.data )
     {
