@@ -4,37 +4,9 @@
 #include <numeric> 
 #include <opencv2/opencv.hpp>
 
-void drawCrossC1(cv::Mat grayImg, int thickness=2)
-{
-    int imgWidth = grayImg.cols;
-    int imgHeight = grayImg.rows;
-    // Middle points for drawing a cross
-    int midH = floor(imgWidth / 2);
-    int midW = floor(imgHeight / 2);
+void drawCrossC1(cv::Mat, int thickness=2);
 
-    // Draw horizontal line
-    cv::line(grayImg, cv::Point(0,midH), cv::Point(imgWidth,midH),cv::Scalar(255),thickness);
-    // Draw vertical line
-    cv::line(grayImg, cv::Point(midW,0), cv::Point(midW,imgHeight),cv::Scalar(255), thickness);
-
-    return;
-}
-
-void drawCrossC3(cv::Mat grayImg, int thickness=2)
-{
-    int imgWidth = grayImg.cols;
-    int imgHeight = grayImg.rows;
-    // Middle points for drawing a cross
-    int midH = floor(imgWidth / 2);
-    int midW = floor(imgHeight / 2);
-
-    // Draw horizontal line
-    cv::line(grayImg, cv::Point(0,midH), cv::Point(imgWidth,midH),cv::Scalar(0,0,255),thickness);
-    // Draw vertical line
-    cv::line(grayImg, cv::Point(midW,0), cv::Point(midW,imgHeight),cv::Scalar(0,0,255), thickness);
-
-    return;
-}
+void drawCrossC3(cv::Mat, int thickness=2);
 
 int main( int argc, char** argv )
 {
@@ -61,7 +33,7 @@ int main( int argc, char** argv )
     std::vector<int> pointsX;
     std::vector<int> pointsY;
     // reads four points, shows them and compute baricentre
-    std::cout << "Well take four points and draw them for you" << std::endl;
+    std::cout << "We'll take four points and draw them for you" << std::endl;
     for(size_t i = 0; i < 4; i++)
     {
         int X, Y;
@@ -90,10 +62,64 @@ int main( int argc, char** argv )
     cv::imshow("Image", img);
     cv::waitKey(0);
 
+    // Draw sort of a quadrilatere from PointsX et PointsY
+    for(size_t i = 0; i < pointsX.size(); i++)
+    {
+        cv::Point pt1(pointsX[i], pointsY[i]);
+        cv::Point pt2;
+        // If its the last point, connect it to the first one
+        if(i < pointsX.size()-1)
+        {    
+            pt2 = cv::Point(pointsX[i+1], pointsY[i+1]);
+        }
+        else
+        {
+            pt2 = cv::Point(pointsX[0], pointsY[0]);
+        }
+        cv::line(img, pt1, pt2, cv::Scalar(0,0,255), 2);
+    }
+
+    std::cout << "Draws sort of a quadrilatere entre les points..." << std::endl;
+    cv::imshow("Image", img);
+    cv::waitKey(0);
+
     // Draws a colored cross on image
+    std::cout << "Draws a colored cross on image..." << std::endl;
     drawCrossC3(img);
     cv::imshow("Image", img);
     cv::waitKey(0);
 
     return 0;
+}
+
+void drawCrossC1(cv::Mat grayImg, int thickness)
+{
+    int imgWidth = grayImg.cols;
+    int imgHeight = grayImg.rows;
+    // Middle points for drawing a cross
+    int midH = floor(imgWidth / 2);
+    int midW = floor(imgHeight / 2);
+
+    // Draw horizontal line
+    cv::line(grayImg, cv::Point(0,midH), cv::Point(imgWidth,midH),cv::Scalar(255),thickness);
+    // Draw vertical line
+    cv::line(grayImg, cv::Point(midW,0), cv::Point(midW,imgHeight),cv::Scalar(255), thickness);
+
+    return;
+}
+
+void drawCrossC3(cv::Mat grayImg, int thickness)
+{
+    int imgWidth = grayImg.cols;
+    int imgHeight = grayImg.rows;
+    // Middle points for drawing a cross
+    int midH = floor(imgWidth / 2);
+    int midW = floor(imgHeight / 2);
+
+    // Draw horizontal line
+    cv::line(grayImg, cv::Point(0,midH), cv::Point(imgWidth,midH),cv::Scalar(0,0,255),thickness);
+    // Draw vertical line
+    cv::line(grayImg, cv::Point(midW,0), cv::Point(midW,imgHeight),cv::Scalar(0,0,255), thickness);
+
+    return;
 }
