@@ -19,7 +19,8 @@ int kernel_size = 1;
 int const max_lowThreshold = 100;
 int lowThreshold;
 int ratio = 3;
-
+// points cropping
+std::vector<cv::Point> clicked_Points;
 
 /**
  * @function trackbar callback for sigmaX
@@ -71,6 +72,20 @@ static void CannyThreshold(int, void*)
     cv::imshow( edgesWindowName, imgCanny );
  }
 
+void fillPolygone(cv::Mat& img)
+{
+    const cv::Point* ppt[1] = {&clicked_Points[0]} ;
+    int npt[] = {clicked_Points.size()};
+      
+    cv::fillPoly( 
+              img,
+              ppt,
+              npt,
+              1,
+              cv::Scalar( 255, 255, 255 ));
+
+}
+
 /*
 * @function on_mouse callback for mouse interface
 */
@@ -79,12 +94,14 @@ static void on_mouse(int event, int x, int y, int, void*)
     // if click droit, reset mouseImage to original image
     if(event == cv::EVENT_RBUTTONDOWN)
     {
-        imgIn.copyTo(mouseImage);
+        fillPolygone(mouseImage);
+        clicked_Points.clear();
     }
     if(event == cv::EVENT_LBUTTONDOWN)
     {
         cv::Point pt(x, y);
         cv::circle(mouseImage, pt, 5, cv::Scalar(0,0,255));
+        clicked_Points.push_back(pt);
     }
     cv::imshow(mouseWindowName, mouseImage);
 }
