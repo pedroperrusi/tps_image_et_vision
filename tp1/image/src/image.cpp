@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <opencv2/opencv.hpp>
 
+/*
+    Exercise 2: Affichage d'une image
+*/
 int main( int argc, char** argv )
 {
     cv::Mat img;

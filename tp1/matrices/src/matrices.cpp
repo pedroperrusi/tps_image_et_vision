@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <opencv2/opencv.hpp>
 
+/*
+    Exercise 3: Manipulation des matrices
+*/
 int main( int argc, char** argv )
 {
     std::cout << "Starting matrices program..." << std::endl; 

@@ -8,6 +8,9 @@ void drawCrossC1(cv::Mat, int thickness=2);
 
 void drawCrossC3(cv::Mat, int thickness=2);
 
+/*
+    Exercise 4: Utilisation des images
+*/
 int main( int argc, char** argv )
 {
     cv::Mat img;
