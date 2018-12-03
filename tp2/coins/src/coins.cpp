@@ -74,5 +74,24 @@ int main()
     cv::imshow("Contours Image", drawing);
     while(char c = cv::waitKey(0) != 'q');
 
+    /*Find contours centres*/
+    /// Get the moments
+    std::vector<cv::Moments> mu(contours.size() );
+    for( int i = 0; i < contours.size(); i++ )
+        { mu[i] = cv::moments( contours[i], false ); }
+
+    ///  Get the mass centers:
+    std::vector<cv::Point2f> mc( contours.size() );
+    for( int i = 0; i < contours.size(); i++ )
+    { 
+        mc[i] = cv::Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );
+        cv::circle(img, mc[i], 3, cv::Scalar::all(255));
+    }
+
+    cv::imshow("Seeds Image", img);
+    while(char c = cv::waitKey(0) != 'q');
+
+    
+
     return 0;
 }
