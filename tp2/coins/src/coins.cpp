@@ -31,6 +31,27 @@ int main()
     cv::threshold(imgGray, imgThresh, 40, 255, cv::THRESH_BINARY);
     cv::imshow("Thresh Image", imgThresh);
     while(char c = cv::waitKey(0) != 'q');
-    
+
+    // Q4: Perform distance transform
+    std::cout << "Performing image distance computation... \nPress q to continue" << std::endl;
+    cv::Mat imgDistance, labels;
+    cv::distanceTransform(imgThresh, imgDistance, cv::DIST_L2, 3);
+    cv::imshow("Distance Transform Image", imgDistance);
+    while(char c = cv::waitKey(0) != 'q');
+
+    // Q5: Normalize distance images
+    // Normalize the distance image for range = {0.0, 1.0}
+    // so we can visualize and threshold it
+    std::cout << "Performing distance normalisation... \nPress q to continue" << std::endl;
+    cv::normalize(imgDistance, imgDistance, 0, 1., cv::NORM_MINMAX);
+    cv::imshow("Distance Transform Image", imgDistance);
+    while(char c = cv::waitKey(0) != 'q');
+
+    // Q6: Binariser la carte de distances sur un threshold de 0.5
+    std::cout << "Performing la binarization de l'image de distances... \nPress q to continue" << std::endl;
+    cv::threshold(imgDistance, imgDistance, 0.5, 1, cv::THRESH_BINARY);
+    cv::imshow("Distance Transform Image", imgDistance);
+    while(char c = cv::waitKey(0) != 'q');
+
     return 0;
 }
