@@ -25,87 +25,30 @@ std::vector<cv::Point> clicked_Points;
 /**
  * @function trackbar callback for sigmaX
  */
-static void onTrackbarSigmaX( int value, void* )
-{
-    sigmaX = value;
-    cv::GaussianBlur(imgIn, imgBlur, cv::Size(kernel_size, kernel_size), sigmaX, sigmaY);
-    cv::imshow(blurWindowName, imgBlur);
-}
+static void onTrackbarSigmaX( int value, void* );
 
 /**
  * @function trackbar callback for sigmaY
  */
-static void onTrackbarSigmaY( int value, void* )
-{
-    sigmaX = value;
-    cv::GaussianBlur(imgIn, imgBlur, cv::Size(kernel_size, kernel_size), sigmaX, sigmaY);
-    cv::imshow(blurWindowName, imgBlur);
-}
+static void onTrackbarSigmaY( int value, void* );
 
 /**
  * @function trackbar callback for kernel
  */
-static void onTrackbarKernel( int value, void* )
-{
-    kernel_size = 2*kernel_size+1;
-    cv::GaussianBlur(imgIn, imgBlur, cv::Size(kernel_size, kernel_size), sigmaX, sigmaY);
-    cv::imshow(blurWindowName, imgBlur);
-}
+static void onTrackbarKernel( int value, void* );
 
 /**
  * @function CannyThreshold
  * @brief Trackbar callback - Canny thresholds input with a ratio 1:3
  */
-static void CannyThreshold(int, void*)
-{
-    cv::Mat detected_edges;
-    /// Reduce noise with a kernel 3x3
-    cv::blur( imgGray, detected_edges, cv::Size(3,3) );
+static void CannyThreshold(int, void*);
 
-    /// Canny detector
-    cv::Canny( detected_edges, detected_edges, lowThreshold, lowThreshold*ratio, 3 );
-
-    /// Using Canny's output as a mask, we display our result
-    imgCanny = cv::Scalar::all(0);
-
-    imgIn.copyTo( imgCanny, detected_edges);
-    cv::imshow( edgesWindowName, imgCanny );
- }
-
-void fillPolygone(cv::Mat& img)
-{
-    const cv::Point* ppt[1] = {&clicked_Points[0]} ;
-    int npt[] = {clicked_Points.size()};
-      
-    cv::fillPoly( 
-              img,
-              ppt,
-              npt,
-              1,
-              cv::Scalar( 255, 255, 255 ));
-
-}
+void fillPolygone(cv::Mat& img);
 
 /*
 * @function on_mouse callback for mouse interface
 */
-static void on_mouse(int event, int x, int y, int, void*)
-{
-    // if click droit, reset mouseImage to original image
-    if(event == cv::EVENT_RBUTTONDOWN)
-    {
-        fillPolygone(mouseImage);
-        clicked_Points.clear();
-    }
-    if(event == cv::EVENT_LBUTTONDOWN)
-    {
-        cv::Point pt(x, y);
-        cv::circle(mouseImage, pt, 5, cv::Scalar(0,0,255));
-        clicked_Points.push_back(pt);
-    }
-    cv::imshow(mouseWindowName, mouseImage);
-}
-
+static void on_mouse(int event, int x, int y, int, void*);
 /*
     Operations des Images
 */
@@ -175,4 +118,88 @@ int main()
     while(char c = cv::waitKey(0) != 'n');
 
     return 0;
+}
+
+/**
+ * @function trackbar callback for sigmaX
+ */
+static void onTrackbarSigmaX( int value, void* )
+{
+    sigmaX = value;
+    cv::GaussianBlur(imgIn, imgBlur, cv::Size(kernel_size, kernel_size), sigmaX, sigmaY);
+    cv::imshow(blurWindowName, imgBlur);
+}
+
+/**
+ * @function trackbar callback for sigmaY
+ */
+static void onTrackbarSigmaY( int value, void* )
+{
+    sigmaX = value;
+    cv::GaussianBlur(imgIn, imgBlur, cv::Size(kernel_size, kernel_size), sigmaX, sigmaY);
+    cv::imshow(blurWindowName, imgBlur);
+}
+
+/**
+ * @function trackbar callback for kernel
+ */
+static void onTrackbarKernel( int value, void* )
+{
+    kernel_size = 2*kernel_size+1;
+    cv::GaussianBlur(imgIn, imgBlur, cv::Size(kernel_size, kernel_size), sigmaX, sigmaY);
+    cv::imshow(blurWindowName, imgBlur);
+}
+
+/**
+ * @function CannyThreshold
+ * @brief Trackbar callback - Canny thresholds input with a ratio 1:3
+ */
+static void CannyThreshold(int, void*)
+{
+    cv::Mat detected_edges;
+    /// Reduce noise with a kernel 3x3
+    cv::blur( imgGray, detected_edges, cv::Size(3,3) );
+
+    /// Canny detector
+    cv::Canny( detected_edges, detected_edges, lowThreshold, lowThreshold*ratio, 3 );
+
+    /// Using Canny's output as a mask, we display our result
+    imgCanny = cv::Scalar::all(0);
+
+    imgIn.copyTo( imgCanny, detected_edges);
+    cv::imshow( edgesWindowName, imgCanny );
+ }
+
+void fillPolygone(cv::Mat& img)
+{
+    const cv::Point* ppt[1] = {&clicked_Points[0]} ;
+    int npt[] = { (int) clicked_Points.size()};
+      
+    cv::fillPoly( 
+              img,
+              ppt,
+              npt,
+              1,
+              cv::Scalar( 255, 255, 255 ));
+
+}
+
+/*
+* @function on_mouse callback for mouse interface
+*/
+static void on_mouse(int event, int x, int y, int, void*)
+{
+    // if click droit, reset mouseImage to original image
+    if(event == cv::EVENT_RBUTTONDOWN)
+    {
+        fillPolygone(mouseImage);
+        clicked_Points.clear();
+    }
+    if(event == cv::EVENT_LBUTTONDOWN)
+    {
+        cv::Point pt(x, y);
+        cv::circle(mouseImage, pt, 5, cv::Scalar(0,0,255));
+        clicked_Points.push_back(pt);
+    }
+    cv::imshow(mouseWindowName, mouseImage);
 }
