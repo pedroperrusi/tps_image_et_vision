@@ -63,12 +63,12 @@ int main()
     // find contours
     cv::findContours(imgDistance, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE );
     std::cout << "Number of contours found: " << contours.size() << std::endl;
-    // Draw contours to the image
-    cv::RNG rng(12345);
-    cv::Mat drawing = cv::Mat::zeros( imgDistance.size(), CV_8UC3 );
+    
+    /*Locate coins on image*/
+    cv::Mat drawing = cv::Mat::zeros( imgDistance.size(), CV_32FC1 );
     for( int i = 0; i< contours.size(); i++ )
     {
-        cv::Scalar color = cv::Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
+        cv::Scalar color = cv::Scalar(255);
         cv::drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, cv::Point() );
     }
     cv::imshow("Contours Image", drawing);
