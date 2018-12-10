@@ -12,6 +12,52 @@ void help()
     << std::endl;
 }
 
+void loopWaitKey(char key);
+
+void myCornerHarris(cv::Mat src_gray, cv::Mat& dst);
+
+std::vector<cv::Point> circleOverEdges(cv::Mat features, cv::Mat& drawing, int thresh);
+
+int main()
+{
+    help();
+
+    // reading both images 
+    cv::Mat img1 = cv::imread( "data/t1.png" );
+    cv::Mat img2 = cv::imread( "data/t2.png" );
+    // Visualisation
+    cv::imshow("Image T1", img1);
+    cv::imshow("Image T2", img2);
+    loopWaitKey('n');
+    // convert to grayscale
+    cv::Mat gray1, gray2;
+    cv::cvtColor(img1, gray1, CV_BGR2GRAY);
+    cv::cvtColor(img2, gray2, CV_BGR2GRAY);
+    // Visualization
+    cv::imshow("Image T1", gray1);
+    cv::imshow("Image T2", gray2);
+    loopWaitKey('n');
+
+    /* Call Harris Corner Detection */
+    cv::Mat features1 =  cv::Mat::zeros( gray1.size(), CV_32FC1 );
+    myCornerHarris(gray1, features1);
+    cv::Mat features2 =  cv::Mat::zeros( gray2.size(), CV_32FC1 );
+    myCornerHarris(gray2, features2);
+    // draw circles over the points over thresh = 125
+    int thresh = 125;
+    cv::Mat drawing1; img1.copyTo(drawing1);
+    std::vector<cv::Point> C1 =  circleOverEdges(features1, drawing1, thresh);
+    cv::Mat drawing2; img2.copyTo(drawing2);
+    std::vector<cv::Point> C2 = circleOverEdges(features2, drawing2, thresh);
+    // Visualization
+    cv::imshow("Features over image T1", drawing1);
+    cv::imshow("Features over image T2", drawing2);
+    loopWaitKey('n');
+
+    return 0;
+}
+
+
 // Wait for user input on image window until he presses the key requested
 void loopWaitKey(char key)
 {
@@ -51,45 +97,4 @@ std::vector<cv::Point> circleOverEdges(cv::Mat features, cv::Mat& drawing, int t
         }
     }
     return vecPoints;
-}
-
-int main()
-{
-    help();
-
-    // reading both images 
-    cv::Mat img1 = cv::imread( "data/t1.png" );
-    cv::Mat img2 = cv::imread( "data/t2.png" );
-    // Visualisation
-    cv::imshow("Image T1", img1);
-    cv::imshow("Image T2", img2);
-    loopWaitKey('n');
-    // convert to grayscale
-    cv::Mat gray1, gray2;
-    cv::cvtColor(img1, gray1, CV_BGR2GRAY);
-    cv::cvtColor(img2, gray2, CV_BGR2GRAY);
-    // Visualization
-    cv::imshow("Image T1", gray1);
-    cv::imshow("Image T2", gray2);
-    loopWaitKey('n');
-
-    /* Call Harris Corner Detection */
-    cv::Mat features1 =  cv::Mat::zeros( gray1.size(), CV_32FC1 );
-    myCornerHarris(gray1, features1);
-    cv::Mat features2 =  cv::Mat::zeros( gray2.size(), CV_32FC1 );
-    myCornerHarris(gray2, features2);
-    // draw circles over the points over thresh = 125
-    int thresh = 125;
-    cv::Mat drawing1; img1.copyTo(drawing1);
-    std::vector<cv::Point> C1 =  circleOverEdges(features1, drawing1, thresh);
-    cv::Mat drawing2; img2.copyTo(drawing2);
-    std::vector<cv::Point> C2 = circleOverEdges(features2, drawing2, thresh);
-    // Visualization
-    cv::imshow("Features over image T1", drawing1);
-    cv::imshow("Features over image T2", drawing2);
-    loopWaitKey('n');
-    
-
-
-    return 0;
 }
