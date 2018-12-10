@@ -103,10 +103,38 @@ int main()
     img.convertTo(img_8UC3, CV_8UC3);
     markers.convertTo(markers, CV_32SC1);
     cv::watershed(img_8UC3, markers);
-    cv::Mat segmentedImage = cv::Mat::zeros(markers.size(), CV_8UC1);
-    markers.convertTo(segmentedImage, CV_8UC1);
-    cv::bitwise_not(segmentedImage, segmentedImage);
-    cv::imshow("Preparation to Watershed", segmentedImage);
+    cv::Mat marker_aux = cv::Mat::zeros(markers.size(), CV_8UC1);
+    markers.convertTo(marker_aux, CV_8UC1);
+    cv::bitwise_not(marker_aux, marker_aux);
+    cv::imshow("Preparation to Watershed", marker_aux);
+    while(char c = cv::waitKey(0) != 'q');
+
+    // Generate random colors
+    std::vector<cv::Vec3b> colors;
+    for (size_t i = 0; i < contours.size(); i++)
+    {
+        int b = cv::theRNG().uniform(0, 255);
+        int g = cv::theRNG().uniform(0, 255);
+        int r = cv::theRNG().uniform(0, 255);
+        colors.push_back(cv::Vec3b((uchar)b, (uchar)g, (uchar)r));
+    }
+    // Create the segmented image
+    cv::Mat segmentedImage = cv::Mat::zeros(markers.size(), CV_8UC3);
+    // Fill labeled objects with random colors
+    for (int i = 0; i < markers.rows; i++)
+    {
+        for (int j = 0; j < markers.cols; j++)
+        {
+            int index = markers.at<int>(i,j);
+            // rappel: index = 0 est le background
+            if (index > 0 && index <= static_cast<int>(contours.size()))
+                segmentedImage.at<cv::Vec3b>(i,j) = colors[index-1];
+            else
+                segmentedImage.at<cv::Vec3b>(i,j) = cv::Vec3b(0,0,0);
+        }
+    }
+    // Visualize the final image
+    imshow("Final Result", segmentedImage);
     while(char c = cv::waitKey(0) != 'q');
 
     return 0;
