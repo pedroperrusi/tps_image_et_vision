@@ -5,9 +5,17 @@
     On souhaite compter automatiquement le nombre de coins sur l'image.
     Tout le development a été basée sur https://docs.opencv.org/3.1.0/d2/dbd/tutorial_distance_transform.html
 */
+void help()
+{
+    std::cout << "On souhaite compter automatiquement le nombre de coins sur l'image.\n" 
+              << "Pour ça, on vais effectuer une détéction des contours et, ensuite une segmentation par watershed"
+    << std::endl;
+}
+
 int main()
 {
-    // Load image of lena
+    help();
+    // Load image of coins
     cv::Mat img = cv::imread( "data/coins.jpg" );
     if( !img.data )
     {
@@ -63,11 +71,11 @@ int main()
     std::vector<cv::Vec4i> hierarchy;
     // find contours
     cv::findContours(imgDistance, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE );
-    std::cout << "Number of contours found: " << contours.size() << std::endl;
+    std::cout << "Number of coins found: " << contours.size() << std::endl;
     
     /*--- Locate coins on image ---*/
     cv::Mat markers = cv::Mat::zeros( imgDistance.size(), CV_32FC1 );
-    // Background marker located at (5,5)
+    // Background marker located at (5,5), watershed will use it as a seed to the background
     cv::circle(markers, cv::Point(5,5), 3, CV_RGB(255,255,255), -1);
     // Draw each countour
     for( int i = 0; i< contours.size(); i++ )
@@ -78,25 +86,6 @@ int main()
     cv::imshow("Contours Image", 1000 * markers);
     while(char c = cv::waitKey(0) != 'q');
 
-    // /*Find contours centres*/
-    // /// Get the moments
-    // std::vector<cv::Moments> mu(contours.size() );
-    // for( int i = 0; i < contours.size(); i++ )
-    //     { mu[i] = cv::moments( contours[i], false ); }
-
-    // ///  Get the mass centers and draw them over a copy of the image:
-    // cv::Mat imgDrawing;
-    // img.copyTo(imgDrawing);
-    // std::vector<cv::Point2f> mc( contours.size() );
-    // for( int i = 0; i < contours.size(); i++ )
-    // { 
-    //     mc[i] = cv::Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );
-    //     cv::circle(imgDrawing, mc[i], 3, cv::Scalar::all(255));
-    // }
-
-    // cv::imshow("Seeds over Image", imgDrawing);
-    // while(char c = cv::waitKey(0) != 'q');
-
     /* --- Apply Watershed algorithm pour segmenter coins.jpg --- */
     // attention to image types
     cv::Mat img_8UC3;
@@ -105,7 +94,7 @@ int main()
     cv::watershed(img_8UC3, markers);
     cv::Mat marker_aux = cv::Mat::zeros(markers.size(), CV_8UC1);
     markers.convertTo(marker_aux, CV_8UC1);
-    cv::bitwise_not(marker_aux, marker_aux);
+    cv::bitwise_not(marker_aux, marker_aux); // invert image
     cv::imshow("Preparation to Watershed", marker_aux);
     while(char c = cv::waitKey(0) != 'q');
 
