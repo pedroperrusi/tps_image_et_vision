@@ -65,7 +65,7 @@ int main()
     cv::findContours(imgDistance, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE );
     std::cout << "Number of contours found: " << contours.size() << std::endl;
     
-    /*Locate coins on image*/
+    /*--- Locate coins on image ---*/
     cv::Mat markers = cv::Mat::zeros( imgDistance.size(), CV_32FC1 );
     // Background marker located at (5,5)
     cv::circle(markers, cv::Point(5,5), 3, CV_RGB(255,255,255), -1);
@@ -97,7 +97,7 @@ int main()
     // cv::imshow("Seeds over Image", imgDrawing);
     // while(char c = cv::waitKey(0) != 'q');
 
-    /* Apply Watershed algorithm pour segmenter coins.jpg */
+    /* --- Apply Watershed algorithm pour segmenter coins.jpg --- */
     // attention to image types
     cv::Mat img_8UC3;
     img.convertTo(img_8UC3, CV_8UC3);
