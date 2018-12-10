@@ -18,6 +18,8 @@ void myCornerHarris(cv::Mat src_gray, cv::Mat& dst);
 
 std::vector<cv::Point> circleOverEdges(cv::Mat features, cv::Mat& drawing, int thresh);
 
+std::vector<cv::Point> correspondFeatures(cv::Mat, std::vector<cv::Point>, cv::Mat, std::vector<cv::Point>, int w=7);
+
 int main()
 {
     help();
@@ -46,13 +48,17 @@ int main()
     // draw circles over the points over thresh = 125
     int thresh = 125;
     cv::Mat drawing1; img1.copyTo(drawing1);
-    std::vector<cv::Point> C1 =  circleOverEdges(features1, drawing1, thresh);
+    std::vector<cv::Point> C1 = circleOverEdges(features1, drawing1, thresh);
     cv::Mat drawing2; img2.copyTo(drawing2);
     std::vector<cv::Point> C2 = circleOverEdges(features2, drawing2, thresh);
     // Visualization
     cv::imshow("Features over image T1", drawing1);
     cv::imshow("Features over image T2", drawing2);
     loopWaitKey('n');
+
+    /* Mise en correspondence */
+    // get correspondence of C1 to C2
+    // std::vector<cv::Point> C1_2 = correspondFeatures(features1, C1, features2, C2, 7);
 
     return 0;
 }
@@ -97,4 +103,27 @@ std::vector<cv::Point> circleOverEdges(cv::Mat features, cv::Mat& drawing, int t
         }
     }
     return vecPoints;
+}
+
+// Brute force correponding features
+// Return vector of corresponding pixels of features1 and featues2 based on C1 and C2 inside window w
+std::vector<cv::Point> correspondFeatures(cv::Mat features1, std::vector<cv::Point> C1, 
+                                          cv::Mat features2, std::vector<cv::Point> C2,
+                                          int w=7)
+{
+    // generate output vector initialized to zero
+    std::vector<cv::Point> correspondance12(C1.size(), cv::Point(0,0));   
+    // subimages for each window
+    cv::Mat windowC1, windowC2;
+    for(size_t i_C1 = 0; i_C1 < C1.size(); i_C1++)
+    {
+        double accum = 0;
+        for(size_t j_C2 = 0; j_C2 < C2.size(); j_C2++)
+        {
+            // Crate subimages of widith w centered in C1[i] and C2[j]
+            windowC1 = features1(cv::Rect(C1[i_C1].x, C1[i_C1].y, w, w));
+            windowC2 = features2(cv::Rect(C2[j_C2].x, C2[j_C2].y, w, w));
+            // compute their difference ...
+        }
+    }
 }
