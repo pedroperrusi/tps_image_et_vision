@@ -3,6 +3,7 @@
 
 /*
     On souhaite compter automatiquement le nombre de coins sur l'image.
+    Tout le development a été basée sur https://docs.opencv.org/3.1.0/d2/dbd/tutorial_distance_transform.html
 */
 int main()
 {
@@ -65,33 +66,48 @@ int main()
     std::cout << "Number of contours found: " << contours.size() << std::endl;
     
     /*Locate coins on image*/
-    cv::Mat drawing = cv::Mat::zeros( imgDistance.size(), CV_32FC1 );
+    cv::Mat markers = cv::Mat::zeros( imgDistance.size(), CV_32FC1 );
+    // Background marker located at (5,5)
+    cv::circle(markers, cv::Point(5,5), 3, CV_RGB(255,255,255), -1);
+    // Draw each countour
     for( int i = 0; i< contours.size(); i++ )
     {
-        cv::Scalar color = cv::Scalar(255);
-        cv::drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, cv::Point() );
+        cv::Scalar color = cv::Scalar::all(static_cast<int>(i)+1);
+        cv::drawContours(markers, contours, i, color, -1, 8, hierarchy);
     }
-    cv::imshow("Contours Image", drawing);
+    cv::imshow("Contours Image", 1000 * markers);
     while(char c = cv::waitKey(0) != 'q');
 
-    /*Find contours centres*/
-    /// Get the moments
-    std::vector<cv::Moments> mu(contours.size() );
-    for( int i = 0; i < contours.size(); i++ )
-        { mu[i] = cv::moments( contours[i], false ); }
+    // /*Find contours centres*/
+    // /// Get the moments
+    // std::vector<cv::Moments> mu(contours.size() );
+    // for( int i = 0; i < contours.size(); i++ )
+    //     { mu[i] = cv::moments( contours[i], false ); }
 
-    ///  Get the mass centers:
-    std::vector<cv::Point2f> mc( contours.size() );
-    for( int i = 0; i < contours.size(); i++ )
-    { 
-        mc[i] = cv::Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );
-        cv::circle(img, mc[i], 3, cv::Scalar::all(255));
-    }
+    // ///  Get the mass centers and draw them over a copy of the image:
+    // cv::Mat imgDrawing;
+    // img.copyTo(imgDrawing);
+    // std::vector<cv::Point2f> mc( contours.size() );
+    // for( int i = 0; i < contours.size(); i++ )
+    // { 
+    //     mc[i] = cv::Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );
+    //     cv::circle(imgDrawing, mc[i], 3, cv::Scalar::all(255));
+    // }
 
-    cv::imshow("Seeds Image", img);
+    // cv::imshow("Seeds over Image", imgDrawing);
+    // while(char c = cv::waitKey(0) != 'q');
+
+    /* Apply Watershed algorithm pour segmenter coins.jpg */
+    // attention to image types
+    cv::Mat img_8UC3;
+    img.convertTo(img_8UC3, CV_8UC3);
+    markers.convertTo(markers, CV_32SC1);
+    cv::watershed(img_8UC3, markers);
+    cv::Mat segmentedImage = cv::Mat::zeros(markers.size(), CV_8UC1);
+    markers.convertTo(segmentedImage, CV_8UC1);
+    cv::bitwise_not(segmentedImage, segmentedImage);
+    cv::imshow("Preparation to Watershed", segmentedImage);
     while(char c = cv::waitKey(0) != 'q');
-
-    
 
     return 0;
 }
