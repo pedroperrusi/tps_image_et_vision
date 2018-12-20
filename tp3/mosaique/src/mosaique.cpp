@@ -1,9 +1,10 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
+#define BIG_VALUE 100000000
+
 /*
-    On souhaite compter automatiquement le nombre de coins sur l'image.
-    Tout le development a été basée sur https://docs.opencv.org/3.1.0/d2/dbd/tutorial_distance_transform.html
+    On souhaite combiner les images de deux photographies proches
 */
 void help()
 {
@@ -18,7 +19,7 @@ void myCornerHarris(cv::Mat src_gray, cv::Mat& dst);
 
 std::vector<cv::Point> circleOverEdges(cv::Mat features, cv::Mat& drawing, int thresh);
 
-std::vector<cv::Point> correspondFeatures(cv::Mat, std::vector<cv::Point>, cv::Mat, std::vector<cv::Point>, int w=7);
+std::vector<cv::Point> correspondFeatures(cv::Mat, std::vector<cv::Point>, cv::Mat, std::vector<cv::Point>, int w);
 
 int main()
 {
@@ -33,8 +34,8 @@ int main()
     loopWaitKey('n');
     // convert to grayscale
     cv::Mat gray1, gray2;
-    cv::cvtColor(img1, gray1, CV_BGR2GRAY);
-    cv::cvtColor(img2, gray2, CV_BGR2GRAY);
+    cv::cvtColor(img1, gray1, cv::COLOR_RGB2GRAY);
+    cv::cvtColor(img2, gray2, cv::COLOR_RGB2GRAY);
     // Visualization
     cv::imshow("Image T1", gray1);
     cv::imshow("Image T2", gray2);
@@ -58,7 +59,7 @@ int main()
 
     /* Mise en correspondence */
     // get correspondence of C1 to C2
-    // std::vector<cv::Point> C1_2 = correspondFeatures(features1, C1, features2, C2, 7);
+    std::vector<cv::Point> C1_2 = correspondFeatures(gray1, C1, gray2, C2, 7);
 
     return 0;
 }
@@ -106,24 +107,45 @@ std::vector<cv::Point> circleOverEdges(cv::Mat features, cv::Mat& drawing, int t
 }
 
 // Brute force correponding features
-// Return vector of corresponding pixels of features1 and featues2 based on C1 and C2 inside window w
-std::vector<cv::Point> correspondFeatures(cv::Mat features1, std::vector<cv::Point> C1, 
-                                          cv::Mat features2, std::vector<cv::Point> C2,
+// Return vector of corresponding pixels of gray1 and gray2 based on C1 and C2 inside window w
+std::vector<cv::Point> correspondFeatures(cv::Mat gray1, std::vector<cv::Point> C1, 
+                                          cv::Mat gray2, std::vector<cv::Point> C2,
                                           int w=7)
 {
-    // generate output vector initialized to zero
-    std::vector<cv::Point> correspondance12(C1.size(), cv::Point(0,0));   
+    // generate output vector initialized to -1
+    std::vector<cv::Point> correspondance12(C1.size(), cv::Point(-1,-1));
     // subimages for each window
     cv::Mat windowC1, windowC2;
     for(size_t i_C1 = 0; i_C1 < C1.size(); i_C1++)
     {
-        double accum = 0;
+        int min_idx = -1; // invalid index
+        double minDiff = BIG_VALUE; // arbitrary big value
         for(size_t j_C2 = 0; j_C2 < C2.size(); j_C2++)
         {
-            // Crate subimages of widith w centered in C1[i] and C2[j]
-            windowC1 = features1(cv::Rect(C1[i_C1].x, C1[i_C1].y, w, w));
-            windowC2 = features2(cv::Rect(C2[j_C2].x, C2[j_C2].y, w, w));
-            // compute their difference ...
+            // Crate subimages of widith w centered in C1[i] - w and C2[j] - w
+            // they are rectangles of dimension 2*w.
+            windowC1 = gray1(cv::Rect(C1[i_C1].x - w, C1[i_C1].y - w, 2*w, 2*w));
+            windowC2 = gray2(cv::Rect(C2[j_C2].x - w, C2[j_C2].y - w, 2*w, 2*w));
+            // compute their difference ... (http://answers.opencv.org/question/104818/squaring-elements-of-a-matrix-and-summing-them/)
+            cv::Mat diffWindow = windowC1 - windowC2;
+            // elementwise multiplication
+            cv::Mat squareDiff = diffWindow.mul(diffWindow);
+            // computing its sum
+            double sumDiff = cv::sum(squareDiff)[0];
+            if(sumDiff < minDiff)
+            {
+                minDiff = sumDiff;
+                min_idx = j_C2;
+            }
+        }
+        // if there is a valid index, a minimum is been found
+        if(min_idx != -1)
+        {
+            correspondance12[i_C1] = C2[min_idx];
         }
     }
+    for (const auto& i: correspondance12)
+        std::cout << i << ' ' << std::endl;
+
+    return correspondance12;
 }
