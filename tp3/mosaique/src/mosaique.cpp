@@ -23,6 +23,8 @@ std::vector<cv::Point> correspondFeatures(cv::Mat, std::vector<cv::Point>, cv::M
 
 cv::Mat composeImages(cv::Mat img1, cv::Mat img2);
 
+void drawCorrespondingLines(cv::Mat, cv::Mat, cv::Mat&, std::vector<cv::Point>, std::vector<cv::Point>);
+
 int main()
 {
     help();
@@ -68,6 +70,9 @@ int main()
     cv::imshow("Mosaique", mosaique);
     loopWaitKey('n');
 
+    drawCorrespondingLines(img1,  img2, mosaique, C1, C1_2);
+    cv::imshow("Mosaique", mosaique);
+    loopWaitKey('n');
 
     return 0;
 }
@@ -97,6 +102,15 @@ cv::Mat composeImages(cv::Mat img1, cv::Mat img2)
     img2.copyTo(targetROI);
     // return composed image
     return dst;
+}
+
+void drawCorrespondingLines(cv::Mat img1, cv::Mat img2, cv::Mat& dst, std::vector<cv::Point> C1, std::vector<cv::Point> C1_2)
+{
+    for(size_t i = 0; i < C1.size(); i++)
+    {
+        cv::Point deplacedC1_2 = cv::Point(C1_2[i].x + img1.cols, C1_2[i].y);
+        cv::line(dst, C1[i], deplacedC1_2, cv::Scalar(255,255,255));
+    }
 }
 
 // Perform corner harris detection accordingly to TP instructions
