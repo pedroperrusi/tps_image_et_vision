@@ -21,6 +21,8 @@ std::vector<cv::Point> circleOverEdges(cv::Mat features, cv::Mat& drawing, int t
 
 std::vector<cv::Point> correspondFeatures(cv::Mat, std::vector<cv::Point>, cv::Mat, std::vector<cv::Point>, int w);
 
+cv::Mat composeImages(cv::Mat img1, cv::Mat img2);
+
 int main()
 {
     help();
@@ -61,6 +63,12 @@ int main()
     // get correspondence of C1 to C2
     std::vector<cv::Point> C1_2 = correspondFeatures(gray1, C1, gray2, C2, 7);
 
+    // Draw corresponding lines on a new image
+    cv::Mat mosaique = composeImages(img1, img2);
+    cv::imshow("Mosaique", mosaique);
+    loopWaitKey('n');
+
+
     return 0;
 }
 
@@ -70,6 +78,25 @@ void loopWaitKey(char key)
 {
     std::cout << "Press " << key << " to continue" << std::endl;
     while(char c = cv::waitKey(0) != key);
+}
+
+cv::Mat composeImages(cv::Mat img1, cv::Mat img2)
+{
+    // set height as the maximum value between img1 et img2
+    int dstHeight = img1.rows > img2.rows ? img1.rows : img2.rows;
+    // set width as the sum of widiths
+    int dstWidth = img1.cols + img2.cols;
+    // create blank image
+    cv::Mat dst = cv::Mat(dstHeight, dstWidth, img1.type(), cv::Scalar(0,0,0)); 
+    // define region of interest for image 1 and copy it
+    cv::Rect roi(cv::Rect(0,0,img1.cols, img1.rows));
+    cv::Mat targetROI = dst(roi);
+    img1.copyTo(targetROI);
+    // define region of interest for image 2 and copy it
+    targetROI = dst(cv::Rect(img1.cols,0,img2.cols, img2.rows));
+    img2.copyTo(targetROI);
+    // return composed image
+    return dst;
 }
 
 // Perform corner harris detection accordingly to TP instructions
