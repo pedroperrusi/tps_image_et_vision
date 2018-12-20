@@ -70,26 +70,38 @@ int main()
     cv::imshow("Mosaique", mosaique);
     loopWaitKey('n');
 
-    drawCorrespondingLines(img1,  img2, mosaique, C1, C2, C1_2);
-    cv::imshow("Mosaique", mosaique);
+    cv::Mat mosaique_12;
+    mosaique.copyTo(mosaique_12);
+
+    drawCorrespondingLines(img1,  img2, mosaique_12, C1, C2, C1_2);
+    cv::imshow("Mosaique 1 -> 2", mosaique_12);
     loopWaitKey('n');
 
     // get correspondence C2 C1
     std::vector<int> C2_1 = correspondFeatures(gray2, C2, gray1, C1, 7);
 
     // simetric  correspondence
-    std::vector<cv::Point> CSimetric;
+    std::vector<int> CSimetric(C1_2.size(), -1);
     // find corresponding indexes
     for(size_t i = 0; i < C1_2.size(); i++)
     {
         for(size_t j = 0; j < C2_1.size(); j++)
         {
-            if( C1[C2_1[i]] == C2[C1_2[j]] )
+            if( C1[C2_1[j]].x == C2[C1_2[i]].x && C1[C2_1[j]].y == C2[C1_2[i]].y )
             {
-                CSimetric.push_back(C1[C2_1[i]]);
+                CSimetric[i] = C1_2[j];
             }
         }
     }
+    for (const auto& i: CSimetric)
+        std::cout << i << ' ' << std::endl;
+
+    // draw simmetric mosaique
+    cv::Mat mosaique_simetric;
+    mosaique.copyTo(mosaique_simetric);
+    drawCorrespondingLines(img1,  img2, mosaique_simetric, C1, C2, CSimetric);
+    cv::imshow("Mosaique Simmetrique", mosaique_simetric);
+    loopWaitKey('n');
 
     return 0;
 }
@@ -124,8 +136,11 @@ void drawCorrespondingLines(cv::Mat img1, cv::Mat img2, cv::Mat& dst, std::vecto
 {
     for(size_t i = 0; i < C1.size(); i++)
     {
-        cv::Point deplacedC1_2 = cv::Point(C2[C1_2[i]].x + img1.cols, C2[C1_2[i]].y);
-        cv::line(dst, C1[i], deplacedC1_2, cv::Scalar(255,255,255));
+        if(C1_2[i] != -1)
+        {
+            cv::Point deplacedC1_2 = cv::Point(C2[C1_2[i]].x + img1.cols, C2[C1_2[i]].y);
+            cv::line(dst, C1[i], deplacedC1_2, cv::Scalar(255,255,255));
+        }
     }
 }
 
@@ -201,8 +216,6 @@ std::vector<int> correspondFeatures(cv::Mat gray1, std::vector<cv::Point> C1,
             correspondance12[i_C1] = min_idx;
         }
     }
-    for (const auto& i: correspondance12)
-        std::cout << C2[i] << ' ' << std::endl;
 
     return correspondance12;
 }
