@@ -19,11 +19,11 @@ void myCornerHarris(cv::Mat src_gray, cv::Mat& dst);
 
 std::vector<cv::Point> circleOverEdges(cv::Mat features, cv::Mat& drawing, int thresh);
 
-std::vector<cv::Point> correspondFeatures(cv::Mat, std::vector<cv::Point>, cv::Mat, std::vector<cv::Point>, int w);
+std::vector<int> correspondFeatures(cv::Mat, std::vector<cv::Point>, cv::Mat, std::vector<cv::Point>, int w);
 
 cv::Mat composeImages(cv::Mat img1, cv::Mat img2);
 
-void drawCorrespondingLines(cv::Mat, cv::Mat, cv::Mat&, std::vector<cv::Point>, std::vector<cv::Point>);
+void drawCorrespondingLines(cv::Mat, cv::Mat, cv::Mat&, std::vector<cv::Point>, std::vector<cv::Point>, std::vector<int>);
 
 int main()
 {
@@ -63,16 +63,33 @@ int main()
 
     /* Mise en correspondence */
     // get correspondence of C1 to C2
-    std::vector<cv::Point> C1_2 = correspondFeatures(gray1, C1, gray2, C2, 7);
+    std::vector<int> C1_2 = correspondFeatures(gray1, C1, gray2, C2, 7);
 
     // Draw corresponding lines on a new image
     cv::Mat mosaique = composeImages(img1, img2);
     cv::imshow("Mosaique", mosaique);
     loopWaitKey('n');
 
-    drawCorrespondingLines(img1,  img2, mosaique, C1, C1_2);
+    drawCorrespondingLines(img1,  img2, mosaique, C1, C2, C1_2);
     cv::imshow("Mosaique", mosaique);
     loopWaitKey('n');
+
+    // get correspondence C2 C1
+    std::vector<int> C2_1 = correspondFeatures(gray2, C2, gray1, C1, 7);
+
+    // simetric  correspondence
+    std::vector<cv::Point> CSimetric;
+    // find corresponding indexes
+    for(size_t i = 0; i < C1_2.size(); i++)
+    {
+        for(size_t j = 0; j < C2_1.size(); j++)
+        {
+            if( C1[C2_1[i]] == C2[C1_2[j]] )
+            {
+                CSimetric.push_back(C1[C2_1[i]]);
+            }
+        }
+    }
 
     return 0;
 }
@@ -94,8 +111,7 @@ cv::Mat composeImages(cv::Mat img1, cv::Mat img2)
     // create blank image
     cv::Mat dst = cv::Mat(dstHeight, dstWidth, img1.type(), cv::Scalar(0,0,0)); 
     // define region of interest for image 1 and copy it
-    cv::Rect roi(cv::Rect(0,0,img1.cols, img1.rows));
-    cv::Mat targetROI = dst(roi);
+    cv::Mat targetROI = dst(cv::Rect(0,0,img1.cols, img1.rows));
     img1.copyTo(targetROI);
     // define region of interest for image 2 and copy it
     targetROI = dst(cv::Rect(img1.cols,0,img2.cols, img2.rows));
@@ -104,11 +120,11 @@ cv::Mat composeImages(cv::Mat img1, cv::Mat img2)
     return dst;
 }
 
-void drawCorrespondingLines(cv::Mat img1, cv::Mat img2, cv::Mat& dst, std::vector<cv::Point> C1, std::vector<cv::Point> C1_2)
+void drawCorrespondingLines(cv::Mat img1, cv::Mat img2, cv::Mat& dst, std::vector<cv::Point> C1, std::vector<cv::Point> C2,  std::vector<int> C1_2)
 {
     for(size_t i = 0; i < C1.size(); i++)
     {
-        cv::Point deplacedC1_2 = cv::Point(C1_2[i].x + img1.cols, C1_2[i].y);
+        cv::Point deplacedC1_2 = cv::Point(C2[C1_2[i]].x + img1.cols, C2[C1_2[i]].y);
         cv::line(dst, C1[i], deplacedC1_2, cv::Scalar(255,255,255));
     }
 }
@@ -149,12 +165,12 @@ std::vector<cv::Point> circleOverEdges(cv::Mat features, cv::Mat& drawing, int t
 
 // Brute force correponding features
 // Return vector of corresponding pixels of gray1 and gray2 based on C1 and C2 inside window w
-std::vector<cv::Point> correspondFeatures(cv::Mat gray1, std::vector<cv::Point> C1, 
+std::vector<int> correspondFeatures(cv::Mat gray1, std::vector<cv::Point> C1, 
                                           cv::Mat gray2, std::vector<cv::Point> C2,
                                           int w=7)
 {
     // generate output vector initialized to -1
-    std::vector<cv::Point> correspondance12(C1.size(), cv::Point(-1,-1));
+    std::vector<int> correspondance12(C1.size(), -1);
     // subimages for each window
     cv::Mat windowC1, windowC2;
     for(size_t i_C1 = 0; i_C1 < C1.size(); i_C1++)
@@ -182,11 +198,11 @@ std::vector<cv::Point> correspondFeatures(cv::Mat gray1, std::vector<cv::Point> 
         // if there is a valid index, a minimum is been found
         if(min_idx != -1)
         {
-            correspondance12[i_C1] = C2[min_idx];
+            correspondance12[i_C1] = min_idx;
         }
     }
     for (const auto& i: correspondance12)
-        std::cout << i << ' ' << std::endl;
+        std::cout << C2[i] << ' ' << std::endl;
 
     return correspondance12;
 }
